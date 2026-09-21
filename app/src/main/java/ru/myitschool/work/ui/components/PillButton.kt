@@ -1,20 +1,16 @@
 package ru.myitschool.work.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import ru.myitschool.work.ui.theme.WorkTheme
@@ -29,15 +25,18 @@ fun PillButton(
     container: Color = WorkTheme.colors.field,
     content: Color = WorkTheme.colors.onField,
 ) {
-    Box(
-        modifier = modifier
-            .height(46.dp)
-            .alpha(if (enabled || loading) 1f else 0.5f)
-            .clip(CircleShape)
-            .background(container)
-            .clickable(enabled = enabled && !loading, onClick = onClick)
-            .padding(horizontal = 15.dp),
-        contentAlignment = Alignment.Center
+    Button(
+        onClick = onClick,
+        modifier = modifier.height(46.dp),
+        enabled = enabled && !loading,
+        shape = CircleShape,
+        contentPadding = PaddingValues(horizontal = 15.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = container,
+            contentColor = content,
+            disabledContainerColor = container.copy(alpha = 0.5f),
+            disabledContentColor = content.copy(alpha = 0.7f),
+        )
     ) {
         if (loading) {
             CircularProgressIndicator(
@@ -46,11 +45,7 @@ fun PillButton(
                 color = content
             )
         } else {
-            Text(
-                text = text,
-                style = MaterialTheme.typography.bodySmall,
-                color = content
-            )
+            Text(text = text, style = MaterialTheme.typography.bodySmall)
         }
     }
 }

@@ -25,7 +25,8 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -202,13 +203,15 @@ private fun Header(state: HomeState, viewModel: HomeViewModel) {
 
 @Composable
 private fun RoundIcon(onClick: () -> Unit, tag: String, content: @Composable () -> Unit) {
-    IconButton(
+    FilledIconButton(
         onClick = onClick,
         modifier = Modifier
             .testTag(tag)
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(WorkTheme.colors.field)
+            .size(40.dp),
+        colors = IconButtonDefaults.filledIconButtonColors(
+            containerColor = WorkTheme.colors.field,
+            contentColor = WorkTheme.colors.onField
+        )
     ) { content() }
 }
 

@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -43,20 +45,20 @@ fun SideBar(
         ) {
             HomeTab.entries.forEach { tab ->
                 val isSelected = tab == selected
-                Box(
-                    modifier = Modifier
-                        .testTag(tab.tag)
-                        .clip(CircleShape)
-                        .background(if (isSelected) colors.chipSelected else colors.chipBar)
-                        .clickable { onSelect(tab) }
-                        .padding(10.dp)
-                ) {
-                    Text(
-                        text = tab.title,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (isSelected) colors.onChipSelected else colors.chipText
-                    )
-                }
+                FilterChip(
+                    selected = isSelected,
+                    onClick = { onSelect(tab) },
+                    shape = CircleShape,
+                    border = null,
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = colors.chipBar,
+                        labelColor = colors.chipText,
+                        selectedContainerColor = colors.chipSelected,
+                        selectedLabelColor = colors.onChipSelected,
+                    ),
+                    label = { Text(text = tab.title, style = MaterialTheme.typography.bodySmall) },
+                    modifier = Modifier.testTag(tab.tag)
+                )
             }
         }
     }

@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,25 +53,29 @@ fun DateChips(
             dates.forEachIndexed { index, date ->
                 val isSelected = index == selected
                 val enabled = enabledIndices?.contains(index) ?: true
-                Box(
-                    modifier = Modifier
-                        .testTag(TestIds.Book.getIdDateItemByPosition(index))
-                        .clip(CircleShape)
-                        .background(if (isSelected) colors.chipSelected else colors.chipBar)
-                        .clickable(enabled = enabled) { onSelect(index) }
-                        .padding(10.dp)
-                ) {
-                    Text(
-                        text = runCatching { LocalDate.parse(date).format(chipFormat) }.getOrDefault(date),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = when {
-                            isSelected -> colors.onChipSelected
-                            enabled -> colors.chipText
-                            else -> colors.chipText.copy(alpha = 0.35f)
-                        },
-                        modifier = Modifier.testTag(TestIds.Book.ITEM_DATE)
-                    )
-                }
+                FilterChip(
+                    selected = isSelected,
+                    enabled = enabled,
+                    onClick = { onSelect(index) },
+                    shape = CircleShape,
+                    border = null,
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = colors.chipBar,
+                        labelColor = colors.chipText,
+                        selectedContainerColor = colors.chipSelected,
+                        selectedLabelColor = colors.onChipSelected,
+                        disabledContainerColor = colors.chipBar,
+                        disabledLabelColor = colors.chipText.copy(alpha = 0.35f),
+                    ),
+                    label = {
+                        Text(
+                            text = runCatching { LocalDate.parse(date).format(chipFormat) }.getOrDefault(date),
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.testTag(TestIds.Book.ITEM_DATE)
+                        )
+                    },
+                    modifier = Modifier.testTag(TestIds.Book.getIdDateItemByPosition(index))
+                )
             }
         }
     }
