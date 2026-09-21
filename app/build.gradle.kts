@@ -22,6 +22,7 @@ android {
     }
 
     buildFeatures.viewBinding = true
+    buildFeatures.buildConfig = true
 
     compileOptions {
         sourceCompatibility = Version.Kotlin.javaSource
