@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -78,7 +79,7 @@ fun HomeScreen(
             .fillMaxSize()
             .background(colors.background)
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize().statusBarsPadding()) {
             Header(state, viewModel)
             Text(
                 text = when (state.tab) {
@@ -241,12 +242,17 @@ private fun MainTab(state: HomeState, viewModel: HomeViewModel) {
                 }
             )
         }
-        item {
-            ActionCard(
-                text = "Забронировать",
-                onClick = { viewModel.onIntent(HomeIntent.SelectTab(HomeTab.Places)) },
-                modifier = Modifier.testTag(TestIds.Main.ADD_BUTTON)
-            )
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Row {
+                ActionCard(
+                    text = "Забронировать",
+                    onClick = { viewModel.onIntent(HomeIntent.SelectTab(HomeTab.Places)) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag(TestIds.Main.ADD_BUTTON)
+                )
+                Spacer(Modifier.weight(1f))
+            }
         }
         item(span = { GridItemSpan(maxLineSpan) }) {
             Text(
@@ -256,11 +262,15 @@ private fun MainTab(state: HomeState, viewModel: HomeViewModel) {
                 modifier = Modifier.padding(top = 30.dp)
             )
         }
-        item {
-            ActionCard(
-                text = "Забронировать",
-                onClick = { viewModel.onIntent(HomeIntent.SelectTab(HomeTab.Rooms)) }
-            )
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Row {
+                ActionCard(
+                    text = "Забронировать",
+                    onClick = { viewModel.onIntent(HomeIntent.SelectTab(HomeTab.Rooms)) },
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(Modifier.weight(1f))
+            }
         }
         state.error?.let { error ->
             item(span = { GridItemSpan(maxLineSpan) }) {
