@@ -36,6 +36,8 @@ android {
 dependencies {
     defaultComposeLibrary()
     implementation("androidx.datastore:datastore-preferences:1.1.7")
+    implementation("androidx.security:security-crypto:1.1.0")
+    implementation("androidx.compose.material:material-icons-core")
     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.4.0")
     implementation("androidx.navigation:navigation-compose:2.9.6")
     val coil = "3.3.0"

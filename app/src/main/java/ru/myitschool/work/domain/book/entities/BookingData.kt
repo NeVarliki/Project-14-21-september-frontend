@@ -5,7 +5,7 @@ data class BookingData(
     val places: List<Place>
 ) {
     data class Place(
-        val id: String,
+        val id: Long,
         val name: String
     )
 }

@@ -1,51 +1,68 @@
 package ru.myitschool.work.data.repo
 
-import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
-import androidx.datastore.preferences.preferencesDataStore
-import kotlinx.coroutines.flow.firstOrNull
-import ru.myitschool.work.App
+import ru.myitschool.work.data.source.ApiException
+import ru.myitschool.work.data.source.CacheDataSource
 import ru.myitschool.work.data.source.NetworkDataSource
+import ru.myitschool.work.data.source.SecureStorage
 
 object AuthRepository {
-    private const val STORE = "AUTH-STORE"
-    private const val CODE_KEY = "CODE"
+    const val MAX_ATTEMPTS = 5
+    const val LOCK_MILLIS = 60_000L
 
-    private var codeCache: String? = null
-
-    suspend fun checkAndSave(text: String): Result<Boolean> {
-        return NetworkDataSource.checkAuth(text).onSuccess { success ->
-            if (success) {
-                codeCache = text
-                App.context.userDataStore.edit { preferences ->
-                    val prefKey = stringPreferencesKey(CODE_KEY)
-                    preferences[prefKey] = text
+    suspend fun login(username: String, password: String): Result<Unit> {
+        val lockLeft = lockLeftMillis()
+        if (lockLeft > 0) return Result.failure(LockedException(lockLeft))
+        return runCatching {
+            NetworkDataSource.login(username, password)
+        }.map { tokens ->
+            SecureStorage.access = tokens.access
+            SecureStorage.refresh = tokens.refresh
+            SecureStorage.username = username
+            CacheDataSource.saveAttempts(0)
+            CacheDataSource.saveLockUntil(0)
+        }.recoverCatching { error ->
+            val mapped = if (error is ApiException.Server && error.message?.contains("credentials", true) == true) {
+                ApiException.Unauthorized()
+            } else error
+            if (mapped is ApiException.Unauthorized) {
+                val attempts = CacheDataSource.readAttempts() + 1
+                CacheDataSource.saveAttempts(attempts)
+                if (attempts >= MAX_ATTEMPTS) {
+                    val until = System.currentTimeMillis() + LOCK_MILLIS
+                    CacheDataSource.saveLockUntil(until)
+                    CacheDataSource.saveAttempts(0)
+                    throw LockedException(LOCK_MILLIS)
                 }
             }
+            throw mapped
         }
     }
 
-    suspend fun getCode(): String? {
-        if (codeCache == null) {
-            codeCache = App.context.userDataStore.data
-                .firstOrNull()
-                ?.let { preferences ->
-                    preferences[stringPreferencesKey(CODE_KEY)]
-                }
-        }
-        return codeCache
+    suspend fun lockLeftMillis(): Long {
+        val until = CacheDataSource.readLockUntil()
+        return (until - System.currentTimeMillis()).coerceAtLeast(0)
+    }
+
+    fun isAuthorized(): Boolean = SecureStorage.access != null
+
+    fun accessToken(): String? = SecureStorage.access
+
+    fun username(): String? = SecureStorage.username
+
+    suspend fun refreshTokens(): Boolean {
+        val refresh = SecureStorage.refresh ?: return false
+        return runCatching { NetworkDataSource.refresh(refresh) }
+            .onSuccess {
+                SecureStorage.access = it.access
+                SecureStorage.refresh = it.refresh
+            }
+            .isSuccess
     }
 
     suspend fun logout() {
-        codeCache = null
-        App.context.userDataStore.edit { preferences ->
-            val prefKey = stringPreferencesKey(CODE_KEY)
-            preferences.remove(prefKey)
-        }
+        SecureStorage.clear()
+        CacheDataSource.clear()
     }
 
-    private val Context.userDataStore: DataStore<Preferences> by preferencesDataStore(name = STORE)
+    class LockedException(val leftMillis: Long) : Exception("Много запросов")
 }
