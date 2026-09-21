@@ -63,6 +63,10 @@ class HomeViewModel : ViewModel() {
 
     private fun mutate(successPlace: String?, block: suspend () -> Result<Unit>) {
         if (_uiState.value.busy) return
+        if (_uiState.value.offline) {
+            _uiState.update { it.copy(alert = AlertKind.NoInternet) }
+            return
+        }
         viewModelScope.launch {
             _uiState.update { it.copy(busy = true, alert = null) }
             block().fold(

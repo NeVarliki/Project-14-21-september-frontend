@@ -212,14 +212,15 @@ private fun RoundIcon(onClick: () -> Unit, tag: String, content: @Composable () 
     ) { content() }
 }
 
-private val gridPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 120.dp)
+private fun gridPadding(offline: Boolean) =
+    PaddingValues(start = 20.dp, end = 20.dp, top = if (offline) 48.dp else 20.dp, bottom = 120.dp)
 
 @Composable
 private fun MainTab(state: HomeState, viewModel: HomeViewModel) {
     val colors = WorkTheme.colors
     LazyVerticalGrid(
         columns = GridCells.Adaptive(160.dp),
-        contentPadding = gridPadding,
+        contentPadding = gridPadding(state.offline),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxSize()
@@ -236,7 +237,7 @@ private fun MainTab(state: HomeState, viewModel: HomeViewModel) {
                     HoldButton(
                         text = "Освободить",
                         onConfirm = { viewModel.onIntent(HomeIntent.AskFree) },
-                        enabled = !state.busy,
+                        enabled = !state.busy && !state.offline,
                         modifier = Modifier.testTag("free_button_$index")
                     )
                 }
@@ -292,7 +293,7 @@ private fun BookTab(state: HomeState, viewModel: HomeViewModel, rooms: Boolean) 
     val day = state.days.getOrNull(dayIndex)
     LazyVerticalGrid(
         columns = GridCells.Adaptive(160.dp),
-        contentPadding = gridPadding,
+        contentPadding = gridPadding(state.offline),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
         modifier = Modifier.fillMaxSize()
